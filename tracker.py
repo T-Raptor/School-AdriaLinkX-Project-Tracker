@@ -38,7 +38,6 @@ def report_failure(rsp):
 
 def push_shuttle_move(shuttle):
     pos = calculate_position(shuttle["path"])
-    print(pos)
     event = {
         "target": shuttle["id"],
         "subject": "MOVE",
@@ -116,7 +115,7 @@ def update_shuttle(shuttle):
         track = random_track()
         shuttle["path"] = create_path(track["station1"], track["station2"])
     path = shuttle["path"]
-    path["progress"] += 0.1
+    path["progress"] += 0.02
     if path["progress"] > 1:
         tracks = get_available_tracks(path["stop"])
         path = track_to_path(random_entry(tracks), path["stop"])
