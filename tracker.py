@@ -11,10 +11,9 @@ URL_API = "http://localhost:8080/api"
 
 
 def register_shuttle(serial):
-    return {
-        "serial": serial,
-        "id": 9
-    }
+    rsp = requests.post(os.path.join(URL_API, "shuttles"), json={"serial": serial})
+    report_failure(rsp)
+    return rsp.json()
 
 
 def fetch_tracks():
