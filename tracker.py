@@ -64,6 +64,15 @@ def random_track():
     return random_entry(get_tracks())
 
 
+def get_available_tracks(station):
+    return [track for track in get_tracks() if track["station1"]["id"] == station["id"] or track["station2"]["id"] == station["id"]]
+
+
+def track_to_path(track, station_start):
+    station_stop = track["station2"] if track["station1"]["id"] == station_start["id"] else track["station1"]
+    return create_path(station_start, station_stop)
+
+
 def random_station(tracks = None):
     if tracks == None:
         tracks = get_tracks()
@@ -109,6 +118,10 @@ def update_shuttle(shuttle):
         shuttle["path"] = create_path(track["station1"], track["station2"])
     path = shuttle["path"]
     path["progress"] += 0.1
+    if path["progress"] > 1:
+        tracks = get_available_tracks(path["stop"])
+        path = track_to_path(random_entry(tracks), path["stop"])
+        shuttle["path"] = path
     push_shuttle_move(shuttle)
 
 
