@@ -2,6 +2,7 @@ import requests
 import os
 import json
 import random
+import time
 URL_API = "http://localhost:8080/api"
 
 
@@ -66,6 +67,7 @@ def push_shuttle_move(shuttle):
     event = {
         "target": shuttle["id"],
         "subject": "MOVE",
+        "moment": int(time.time() * 1000),
         "latitude": shuttle["latitude"],
         "longitude": shuttle["longitude"]
     }
