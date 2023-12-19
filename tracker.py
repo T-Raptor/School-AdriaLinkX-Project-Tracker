@@ -9,12 +9,18 @@ def random_entry(array):
     return array[random.randint(0, len(array)-1)]
 
 
-def create_shuttle(serial, station_start):
+def register_shuttle(serial):
     return {
         "serial": serial,
-        "latitude": station_start["latitude"],
-        "longitude": station_start["longitude"]
+        "id": 9
     }
+
+
+def create_shuttle(serial, station_start):
+    shuttle = register_shuttle(serial)
+    shuttle["latitude"] = station_start["latitude"]
+    shuttle["longitude"] = station_start["latitude"]
+    return shuttle
 
 
 def random_station(tracks = None):
@@ -38,6 +44,7 @@ def create_random_shuttle():
 
 def fetch_tracks():
     rsp = requests.get(os.path.join(URL_API, "tracks"))
+    report_failure(rsp)
     return rsp.json()
 
 
@@ -49,7 +56,26 @@ def get_tracks():
     return cache_tracks
 
 
+def report_failure(rsp):
+    if rsp.status_code < 200 or rsp.status_code >= 300:
+        print(rsp.content)
+        raise RuntimeError("Request failure")
+
+
+def push_shuttle_move(shuttle):
+    event = {
+        "target": shuttle["id"],
+        "subject": "MOVE",
+        "latitude": shuttle["latitude"],
+        "longitude": shuttle["longitude"]
+    }
+    rsp = requests.post(os.path.join(URL_API, "events"), json=event)
+    report_failure(rsp)
+    return rsp
+
+
 
 tracks = get_tracks()
 shuttle = create_random_shuttle()
+push_shuttle_move(shuttle)
 print(shuttle)
