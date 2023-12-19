@@ -6,8 +6,8 @@ import time
 URL_API = "http://localhost:8080/api"
 
 
-def random_entry(array):
-    return array[random.randint(0, len(array)-1)]
+#================================================
+#================================================
 
 
 def register_shuttle(serial):
@@ -15,32 +15,6 @@ def register_shuttle(serial):
         "serial": serial,
         "id": 9
     }
-
-
-def create_shuttle(serial, station_start):
-    shuttle = register_shuttle(serial)
-    shuttle["latitude"] = station_start["latitude"]
-    shuttle["longitude"] = station_start["latitude"]
-    return shuttle
-
-
-def random_station(tracks = None):
-    if tracks == None:
-        tracks = get_tracks()
-    track = random_entry(tracks)
-    return random_entry([track["station1"], track["station2"]])
-
-
-def random_serial():
-    def random_serial_group(size):
-        return ''.join([random_entry("0123456789ABCDEF") for i in range(size)])
-    return f"{random_serial_group(4)}-{random_serial_group(4)}-{random_serial_group(4)}"
-
-
-def create_random_shuttle():
-    serial = random_serial()
-    station = random_station()
-    return create_shuttle(serial, station)
 
 
 def fetch_tracks():
@@ -64,20 +38,93 @@ def report_failure(rsp):
 
 
 def push_shuttle_move(shuttle):
+    pos = calculate_position(shuttle["path"])
+    print(pos)
     event = {
         "target": shuttle["id"],
         "subject": "MOVE",
         "moment": int(time.time() * 1000),
-        "latitude": shuttle["latitude"],
-        "longitude": shuttle["longitude"]
+        "latitude": pos["latitude"],
+        "longitude": pos["longitude"]
     }
     rsp = requests.post(os.path.join(URL_API, "events"), json=event)
     report_failure(rsp)
     return rsp
 
 
+#================================================
+#================================================
 
-tracks = get_tracks()
-shuttle = create_random_shuttle()
-push_shuttle_move(shuttle)
-print(shuttle)
+
+def random_entry(array):
+    return array[random.randint(0, len(array)-1)]
+
+
+def random_track():
+    return random_entry(get_tracks())
+
+
+def random_station(tracks = None):
+    if tracks == None:
+        tracks = get_tracks()
+    track = random_entry(tracks)
+    return random_entry([track["station1"], track["station2"]])
+
+
+def random_serial():
+    def random_serial_group(size):
+        return ''.join([random_entry("0123456789ABCDEF") for i in range(size)])
+    return f"{random_serial_group(4)}-{random_serial_group(4)}-{random_serial_group(4)}"
+
+
+#================================================
+#================================================
+
+
+def create_path(station_start, station_stop):
+    return {
+        "start": station_start,
+        "stop": station_stop,
+        "progress": 0
+    }
+
+
+def calculate_position(path):
+    lat_start = path["start"]["latitude"]
+    lon_start = path["start"]["longitude"]
+    lat_stop = path["stop"]["latitude"]
+    lon_stop = path["stop"]["longitude"]
+    lat_diff = lat_stop - lat_start
+    lon_diff = lon_stop - lon_start
+    return {"longitude": lat_start + lat_diff * path["progress"], "latitude": lon_start + lon_diff * path["progress"]}
+
+
+#================================================
+#================================================
+
+
+def update_shuttle(shuttle):
+    if "path" not in shuttle:
+        track = random_track()
+        shuttle["path"] = create_path(track["station1"], track["station2"])
+    path = shuttle["path"]
+    path["progress"] += 0.1
+    push_shuttle_move(shuttle)
+
+
+def update_shuttles(shuttles):
+    for shuttle in shuttles:
+        update_shuttle(shuttle)
+
+
+def mainloop(shuttles):
+    while True:
+        update_shuttles(shuttles)
+        time.sleep(1)
+
+
+if __name__ == "__main__":
+    shuttles = [
+        register_shuttle(random_serial())
+    ]
+    mainloop(shuttles)
