@@ -136,7 +136,15 @@ def mainloop(shuttles):
 
 
 if __name__ == "__main__":
-    shuttles = [
-        register_shuttle(random_serial())
-    ]
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument("--count", "-c", default=1, type=int)
+    
+    args = parser.parse_args()
+    count = args.count
+
+    shuttles = []
+    for i in range(count):
+        shuttles.append(register_shuttle(random_serial()))
+    print(f"Simulating {count} shuttle(s)...")
     mainloop(shuttles)
