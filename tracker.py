@@ -4,6 +4,12 @@ import json
 import random
 import time
 URL_API = "http://localhost:8080/api"
+WARNINGS = [
+    "Ongoing standstorm",
+    "Extreme weather",
+    "Acid rain",
+    "Maintenance"
+]
 
 
 #================================================
@@ -126,7 +132,7 @@ WARNING_RATIO = 0.1
 def update_warnings():
     if random.random() < WARNING_RATIO:
         track = random_track()
-        push_warning(track["id"], "Hello!")
+        push_warning(track["id"], random_entry(WARNINGS))
 
 
 
