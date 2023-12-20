@@ -50,6 +50,18 @@ def push_shuttle_move(shuttle):
     return rsp
 
 
+def push_warning(track_id, reason):
+    event = {
+        "target": track_id,
+        "subject": "WARN",
+        "moment": int(time.time() * 1000),
+        "reason": reason
+    }
+    rsp = requests.post(os.path.join(URL_API, "events"), json=event)
+    report_failure(rsp)
+    return rsp
+
+
 #================================================
 #================================================
 
@@ -110,6 +122,14 @@ def calculate_position(path):
 #================================================
 
 
+WARNING_RATIO = 0.1
+def update_warnings():
+    if random.random() < WARNING_RATIO:
+        track = random_track()
+        push_warning(track["id"], "Hello!")
+
+
+
 def update_shuttle(shuttle):
     if "path" not in shuttle:
         track = random_track()
@@ -131,6 +151,7 @@ def update_shuttles(shuttles):
 def mainloop(shuttles):
     while True:
         update_shuttles(shuttles)
+        update_warnings()
         time.sleep(1)
 
 
