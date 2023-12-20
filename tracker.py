@@ -3,7 +3,7 @@ import os
 import json
 import random
 import time
-URL_API = "http://localhost:8080/api"
+URL_API = "https://project-2.ti.howest.be/2023-2024/group-12/api"
 WARNINGS = [
     "Ongoing standstorm",
     "Extreme weather",
@@ -17,13 +17,13 @@ WARNINGS = [
 
 
 def register_shuttle(serial):
-    rsp = requests.post(os.path.join(URL_API, "shuttles"), json={"serial": serial})
+    rsp = requests.post(URL_API + "/shuttles", json={"serial": serial})
     report_failure(rsp)
     return rsp.json()
 
 
 def fetch_tracks():
-    rsp = requests.get(os.path.join(URL_API, "tracks"))
+    rsp = requests.get(URL_API + "/tracks")
     report_failure(rsp)
     return rsp.json()
 
@@ -51,7 +51,7 @@ def push_shuttle_move(shuttle):
         "latitude": pos["latitude"],
         "longitude": pos["longitude"]
     }
-    rsp = requests.post(os.path.join(URL_API, "events"), json=event)
+    rsp = requests.post(URL_API + "/events", json=event)
     report_failure(rsp)
     return rsp
 
@@ -63,7 +63,7 @@ def push_warning(track_id, reason):
         "moment": int(time.time() * 1000),
         "reason": reason
     }
-    rsp = requests.post(os.path.join(URL_API, "events"), json=event)
+    rsp = requests.post(URL_API + "/events", json=event)
     report_failure(rsp)
     return rsp
 
