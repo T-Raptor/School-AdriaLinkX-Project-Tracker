@@ -1,6 +1,4 @@
 import requests
-import os
-import json
 import random
 import time
 URL_API = "https://project-2.ti.howest.be/2023-2024/group-12/api"
