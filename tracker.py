@@ -1,7 +1,7 @@
 import requests
 import random
 import time
-URL_API = "https://project-2.ti.howest.be/2023-2024/group-12/api"
+URL_API = "http://localhost:8080/api"
 WARNINGS = [
     "Ongoing standstorm",
     "Extreme weather",
@@ -82,6 +82,17 @@ def get_available_tracks(station):
     return [track for track in get_tracks() if track["station1"]["id"] == station["id"] or track["station2"]["id"] == station["id"]]
 
 
+def is_track_taken(track, shuttles):
+    s1 = track["station1"]
+    s2 = track["station2"]
+    for shuttle in shuttles:
+        if "path" in shuttle:
+            path = shuttle["path"]
+            if (path["start"] == s1 or path["start"] == s2) and (path["stop"] == s1 or path["stop"] == s2):
+                return True
+    return False
+
+
 def track_to_path(track, station_start):
     station_stop = track["station2"] if track["station1"]["id"] == station_start["id"] else track["station1"]
     return create_path(station_start, station_stop)
@@ -122,6 +133,10 @@ def calculate_position(path):
     return {"longitude": lat_start + lat_diff * path["progress"], "latitude": lon_start + lon_diff * path["progress"]}
 
 
+def all_except(array, exception):
+    return [entry for entry in array if entry != exception]
+
+
 #================================================
 #================================================
 
@@ -134,22 +149,26 @@ def update_warnings():
 
 
 
-def update_shuttle(shuttle):
+def update_shuttle(shuttle, shuttles):
     if "path" not in shuttle:
         track = random_track()
         shuttle["path"] = create_path(track["station1"], track["station2"])
     path = shuttle["path"]
-    path["progress"] += 0.02
     if path["progress"] > 1:
         tracks = get_available_tracks(path["stop"])
-        path = track_to_path(random_entry(tracks), path["stop"])
-        shuttle["path"] = path
+        track = random_entry(tracks)
+        if not is_track_taken(track, all_except(shuttles, shuttle)):
+            path = track_to_path(track, path["stop"])
+            shuttle["path"] = path
+    else:
+        path["progress"] += 0.02
+    time.sleep(random.random() * .5)
     push_shuttle_move(shuttle)
 
 
 def update_shuttles(shuttles):
     for shuttle in shuttles:
-        update_shuttle(shuttle)
+        update_shuttle(shuttle, shuttles)
 
 
 def mainloop(shuttles):
