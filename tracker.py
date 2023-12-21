@@ -88,7 +88,7 @@ def is_track_taken(track, shuttles):
     for shuttle in shuttles:
         if "path" in shuttle:
             path = shuttle["path"]
-            if (path["start"] == s1 or path["start"] == s2) and (path["stop"] == s1 or path["stop"] == s2):
+            if path["progress"] < 1.0 and (path["start"] == s1 or path["start"] == s2) and (path["stop"] == s1 or path["stop"] == s2):
                 return True
     return False
 
@@ -152,6 +152,8 @@ def update_warnings():
 def update_shuttle(shuttle, shuttles):
     if "path" not in shuttle:
         track = random_track()
+        if is_track_taken(track, shuttles):
+            return
         shuttle["path"] = create_path(track["station1"], track["station2"])
     path = shuttle["path"]
     if path["progress"] > 1:
