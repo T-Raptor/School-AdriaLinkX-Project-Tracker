@@ -1,7 +1,8 @@
 import requests
 import random
 import time
-URL_API = "http://localhost:8080/api"
+import json
+PATH_CONFIG = "config.json"
 WARNINGS = [
     "Ongoing standstorm",
     "Extreme weather",
@@ -12,6 +13,12 @@ WARNINGS = [
 
 #================================================
 #================================================
+
+
+def get_config_url():
+    with open(PATH_CONFIG) as h:
+        return json.load(h)["url"]
+URL_API = get_config_url()
 
 
 def register_shuttle(serial):
